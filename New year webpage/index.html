@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Fonts from Google-->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Marck+Script&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Marck+Script&display=swap");
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Antonio&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Antonio&display=swap");
+    </style>
+    <!--  -->
+    <title>Happy New Year 2026</title>
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css" />
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+    ></script>
+    <script type="text/javascript" src="jquery.fireworks.js"></script>
+  </head>
+  <body>
+    <div id="happy" class="hidden" data-text="Happy"><h2>Happy</h2></div>
+    <div id="newyear" class="hidden" data-text="New Year 2026">
+      <h1>New Year 2026</h1>
+    </div>
+
+    <!-- Countdown will run first, then show greeting + fireworks -->
+    <div id="countdown">00:10</div>
+    <div id="music-hint" class="hidden">Nhấn vào màn hình để bật nhạc</div>
+    <!-- lì xì card -->
+    <div id="card" class="hidden" aria-hidden="true">
+      <div class="envelope" role="img" aria-label="Thiệp lì xì">
+        <div class="flap"></div>
+        <div class="body">
+          <div class="note hidden" id="card-note" role="document">
+            <h2>Chúc Mừng Năm Mới 2026</h2>
+            <p>An khang thịnh vượng - Vạn sự như ý!</p>
+          </div>
+        </div>
+      </div>
+      <button id="open-card" class="hidden" aria-label="Mở lì xì">
+        Mở lì xì
+      </button>
+    </div>
+    <!-- Background music: put your Tet song at music/tet_song.mp3 -->
+    <audio id="bg-music" src="music/tet_song.mp3" loop preload="auto"></audio>
+    <button
+      id="music-toggle"
+      aria-pressed="false"
+      title="Play music"
+      style="
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        padding: 10px 12px;
+        border-radius: 50%;
+        background: #ff4757;
+        color: #fff;
+        border: none;
+        font-size: 18px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+      "
+    >
+      ♪
+    </button>
+
+    <script>
+      // Music toggle logic: browsers block autoplay so play on user interaction
+      (function () {
+        var audio = document.getElementById("bg-music");
+        var btn = document.getElementById("music-toggle");
+        function updateBtn() {
+          btn.textContent = audio.paused ? "♪" : "\u23F8";
+          btn.title = audio.paused ? "Play music" : "Pause music";
+          btn.setAttribute("aria-pressed", (!audio.paused).toString());
+        }
+        btn.addEventListener("click", function (e) {
+          if (audio.paused) {
+            audio.play().catch(function () {
+              // autoplay blocked
+            });
+          } else {
+            audio.pause();
+          }
+          updateBtn();
+        });
+        // Try to start after first user click anywhere
+        function tryAutoPlay() {
+          if (audio.paused) {
+            audio.play().catch(function () {});
+          }
+          updateBtn();
+          document.removeEventListener("click", tryAutoPlay);
+        }
+        document.addEventListener("click", tryAutoPlay, { once: true });
+        document.addEventListener("DOMContentLoaded", updateBtn);
+      })();
+    </script>
+
+    <script>
+      // Countdown (10 minutes) then start fireworks + music
+      (function () {
+        var audio = document.getElementById("bg-music");
+        var musicBtn = document.getElementById("music-toggle");
+        var countdownEl = document.getElementById("countdown");
+        var musicHint = document.getElementById("music-hint");
+
+        var totalSeconds = 10; // 10 seconds
+        function formatTime(s) {
+          var m = Math.floor(s / 60);
+          var sec = s % 60;
+          return m + ":" + (sec < 10 ? "0" : "") + sec;
+        }
+
+        countdownEl.textContent = formatTime(totalSeconds);
+        var interval = setInterval(function () {
+          totalSeconds--;
+          if (totalSeconds <= 0) {
+            clearInterval(interval);
+            countdownEl.classList.add("hidden");
+            // show lì xì card
+            var card = document.getElementById("card");
+            var envelope, note, openBtn;
+            if (card) {
+              card.classList.remove("hidden");
+              card.setAttribute("aria-hidden", "false");
+              envelope = card.querySelector(".envelope");
+              note = document.getElementById("card-note");
+              openBtn = document.getElementById("open-card");
+              // Auto-open after a short delay
+              setTimeout(function () {
+                if (envelope) envelope.classList.add("open");
+                if (note) note.classList.remove("hidden");
+                if (openBtn) openBtn.classList.add("hidden");
+              }, 800);
+              // Also allow manual open
+              if (openBtn) {
+                openBtn.classList.remove("hidden");
+                openBtn.addEventListener(
+                  "click",
+                  function () {
+                    if (envelope) envelope.classList.add("open");
+                    if (note) note.classList.remove("hidden");
+                    openBtn.classList.add("hidden");
+                  },
+                  { once: true }
+                );
+              }
+            }
+
+            // start fireworks
+            $("body").fireworks({
+              sound: false,
+              opacity: 0.8,
+              width: "100%",
+              height: "100%",
+            });
+
+            // try to play music; if blocked, show hint to click
+            audio
+              .play()
+              .then(function () {
+                musicBtn.textContent = "\u23F8"; // pause symbol
+                musicBtn.title = "Pause music";
+                musicBtn.setAttribute("aria-pressed", "true");
+              })
+              .catch(function () {
+                // autoplay blocked — show hint; try to play on next user click
+                musicHint.classList.remove("hidden");
+                function tryPlayOnUser() {
+                  audio
+                    .play()
+                    .then(function () {
+                      musicHint.classList.add("hidden");
+                      musicBtn.textContent = "\u23F8";
+                      musicBtn.title = "Pause music";
+                      musicBtn.setAttribute("aria-pressed", "true");
+                    })
+                    .catch(function () {});
+                }
+                document.addEventListener("click", tryPlayOnUser, {
+                  once: true,
+                });
+              });
+
+            return;
+          }
+          countdownEl.textContent = formatTime(totalSeconds);
+        }, 1000);
+      })();
+    </script>
+  </body>
+</html>
